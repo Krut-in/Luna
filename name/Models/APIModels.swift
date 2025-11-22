@@ -68,6 +68,9 @@ struct RecommendationItem: Codable, Identifiable, Hashable {
     let venue: Venue
     let score: Double
     let reason: String
+    let already_interested: Bool
+    let friends_interested: Int
+    let total_interested: Int
     
     // Computed property for Identifiable conformance
     var id: String {
@@ -81,13 +84,54 @@ struct InterestResponse: Codable {
     let agent_triggered: Bool?
     let message: String?
     let reservation_code: String?
+    let booking_cancelled: Bool?
     
     enum CodingKeys: String, CodingKey {
         case success
         case agent_triggered
         case message
         case reservation_code
+        case booking_cancelled
     }
+}
+
+// MARK: - Booking Models
+
+/// Response from GET /bookings/{user_id} endpoint
+struct UserBookingsResponse: Codable {
+    let bookings: [BookingItem]
+}
+
+/// Response from GET /venues/{venue_id}/booking endpoint
+struct VenueBookingResponse: Codable {
+    let has_booking: Bool
+    let booking: BookingDetail?
+}
+
+/// Individual booking item for user bookings list
+struct BookingItem: Codable, Identifiable {
+    let id: String
+    let venue: BookingVenue
+    let reservation_code: String
+    let created_at: String
+    let party_size: Int
+}
+
+/// Venue details in booking response (subset of full Venue)
+struct BookingVenue: Codable {
+    let id: String
+    let name: String
+    let category: String
+    let image: String
+    let address: String
+}
+
+/// Booking details for venue booking check
+struct BookingDetail: Codable {
+    let id: String
+    let reservation_code: String
+    let created_at: String
+    let party_size: Int
 }
 
 // MARK: - Request Models

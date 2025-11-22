@@ -122,7 +122,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Blue Bottle Coffee",
             category="Coffee Shop",
             description="Artisan coffee in minimalist space",
-            image="https://picsum.photos/400/300?random=1",
+            image="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop",
             address="450 W 15th St, NYC"
         ),
         Venue(
@@ -130,7 +130,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Stumptown Coffee",
             category="Coffee Shop",
             description="Portland-style coffee roasters",
-            image="https://picsum.photos/400/300?random=2",
+            image="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=300&fit=crop",
             address="18 W 29th St, NYC"
         ),
         Venue(
@@ -138,7 +138,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="La Colombe Coffee",
             category="Coffee Shop",
             description="Draft latte specialists",
-            image="https://picsum.photos/400/300?random=3",
+            image="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=300&fit=crop",
             address="270 Lafayette St, NYC"
         ),
         # Restaurants
@@ -147,7 +147,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="The Smith",
             category="Restaurant",
             description="American brasserie with lively atmosphere",
-            image="https://picsum.photos/400/300?random=4",
+            image="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
             address="956 Broadway, NYC"
         ),
         Venue(
@@ -155,7 +155,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Joe's Pizza",
             category="Restaurant",
             description="Classic New York slice",
-            image="https://picsum.photos/400/300?random=5",
+            image="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop",
             address="7 Carmine St, NYC"
         ),
         Venue(
@@ -163,7 +163,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Sushi Place",
             category="Restaurant",
             description="Fresh sushi and Japanese cuisine",
-            image="https://picsum.photos/400/300?random=6",
+            image="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop",
             address="123 E 12th St, NYC"
         ),
         # Bars
@@ -172,7 +172,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Dead Rabbit",
             category="Bar",
             description="Award-winning Irish pub",
-            image="https://picsum.photos/400/300?random=7",
+            image="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
             address="30 Water St, NYC"
         ),
         Venue(
@@ -180,7 +180,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Employees Only",
             category="Bar",
             description="Prohibition-style cocktail bar",
-            image="https://picsum.photos/400/300?random=8",
+            image="https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=400&h=300&fit=crop",
             address="510 Hudson St, NYC"
         ),
         Venue(
@@ -188,7 +188,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Rooftop Bar",
             category="Bar",
             description="Skyline views and craft cocktails",
-            image="https://picsum.photos/400/300?random=9",
+            image="https://images.unsplash.com/photo-1533769329083-7f2e6e82d73b?w=400&h=300&fit=crop",
             address="230 Fifth Ave, NYC"
         ),
         # Cultural
@@ -197,7 +197,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="MoMA",
             category="Cultural",
             description="Museum of Modern Art",
-            image="https://picsum.photos/400/300?random=10",
+            image="https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=400&h=300&fit=crop",
             address="11 W 53rd St, NYC"
         ),
         Venue(
@@ -205,7 +205,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Whitney Museum",
             category="Cultural",
             description="American art museum",
-            image="https://picsum.photos/400/300?random=11",
+            image="https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=400&h=300&fit=crop",
             address="99 Gansevoort St, NYC"
         ),
         Venue(
@@ -213,7 +213,7 @@ def initialize_data() -> tuple[Dict[str, User], Dict[str, Venue], List[Interest]
             name="Comedy Cellar",
             category="Cultural",
             description="Legendary comedy club",
-            image="https://picsum.photos/400/300?random=12",
+            image="https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=400&h=300&fit=crop",
             address="117 MacDougal St, NYC"
         )
     ]

@@ -85,3 +85,26 @@ class Interest(BaseModel):
     user_id: str
     venue_id: str
     timestamp: datetime
+
+
+class Booking(BaseModel):
+    """
+    Booking model representing an automated reservation for a venue.
+    
+    Created when interest threshold is met (3+ users interested).
+    Tracks reservation details and status to prevent duplicate bookings.
+    
+    Attributes:
+        id: Unique identifier for the booking
+        venue_id: ID of the venue being booked
+        user_ids: List of user IDs included in the booking
+        reservation_code: Mock reservation code (e.g., "LUNA-venue_1-1234")
+        created_at: Timestamp when booking was created
+        status: Current booking status ("active", "cancelled")
+    """
+    id: str
+    venue_id: str
+    user_ids: List[str]
+    reservation_code: str
+    created_at: datetime
+    status: str  # "active" or "cancelled"

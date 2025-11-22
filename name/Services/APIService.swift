@@ -78,6 +78,8 @@ protocol APIServiceProtocol {
     func expressInterest(userId: String, venueId: String) async throws -> InterestResponse
     func fetchUserProfile(userId: String) async throws -> UserProfileResponse
     func fetchRecommendations(userId: String) async throws -> [RecommendationItem]
+    func fetchUserBookings(userId: String) async throws -> [BookingItem]
+    func fetchVenueBooking(venueId: String) async throws -> VenueBookingResponse
 }
 
 // MARK: - API Service Implementation
@@ -168,6 +170,25 @@ class APIService: ObservableObject, APIServiceProtocol {
         
         let response: RecommendationsResponse = try await performRequest(url: url, method: "GET")
         return response.recommendations
+    }
+    
+    /// Fetches all active bookings for a user
+    /// - Parameter userId: The unique identifier of the user
+    /// - Returns: Array of booking items with venue and reservation details
+    /// - Throws: APIError if request fails
+    func fetchUserBookings(userId: String) async throws -> [BookingItem] {
+        let endpoint = "/bookings/\(userId)"
+        let response: UserBookingsResponse = try await performRequest(endpoint: endpoint, method: "GET")
+        return response.bookings
+    }
+    
+    /// Checks if a venue has an active booking
+    /// - Parameter venueId: The unique identifier of the venue
+    /// - Returns: Venue booking response with booking status and details
+    /// - Throws: APIError if request fails
+    func fetchVenueBooking(venueId: String) async throws -> VenueBookingResponse {
+        let endpoint = "/venues/\(venueId)/booking"
+        return try await performRequest(endpoint: endpoint, method: "GET")
     }
     
     // MARK: - Private Helper Methods
