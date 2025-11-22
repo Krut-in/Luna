@@ -75,6 +75,7 @@ class ProfileViewModel: ObservableObject {
     @Published var actionItems: [ActionItem] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var lastUpdated: Date? = nil
     
     // MARK: - Private Properties
     
@@ -114,6 +115,7 @@ class ProfileViewModel: ObservableObject {
                 self.interestedVenues = response.interested_venues
                 self.actionItems = response.action_items
                 self.isLoading = false
+                self.lastUpdated = Date()
             }
         } catch let error as APIError {
             await MainActor.run {
@@ -170,5 +172,28 @@ class ProfileViewModel: ObservableObject {
     /// Clears the current error message
     func clearError() {
         errorMessage = nil
+    }
+    
+    /// Returns formatted relative time since last update
+    var lastUpdatedText: String {
+        guard let lastUpdated = lastUpdated else {
+            return "Never"
+        }
+        
+        let now = Date()
+        let seconds = Int(now.timeIntervalSince(lastUpdated))
+        
+        if seconds < 60 {
+            return "Just now"
+        } else if seconds < 3600 {
+            let minutes = seconds / 60
+            return "\(minutes) minute\(minutes == 1 ? "" : "s") ago"
+        } else if seconds < 86400 {
+            let hours = seconds / 3600
+            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
+        } else {
+            let days = seconds / 86400
+            return "\(days) day\(days == 1 ? "" : "s") ago"
+        }
     }
 }

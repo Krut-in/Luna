@@ -42,7 +42,14 @@ struct VenueFeedView: View {
     /// Filters out venues that are already shown in recommendations
     private var filteredVenues: [VenueListItem] {
         let recommendedVenueIds = Set(viewModel.recommendations.map { $0.venue.id })
-        return viewModel.venues.filter { !recommendedVenueIds.contains($0.id) }
+        var filtered = viewModel.venues.filter { !recommendedVenueIds.contains($0.id) }
+        
+        // Apply category filter if selected
+        if let selectedCategory = viewModel.selectedCategory {
+            filtered = filtered.filter { $0.category == selectedCategory }
+        }
+        
+        return filtered
     }
     
     // MARK: - Body
@@ -127,18 +134,11 @@ struct VenueFeedView: View {
     }
     
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "map")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
-            
-            Text("No Venues Found")
-                .font(.headline)
-            
-            Text("Check back later for new venues")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
+        EmptyStateView(
+            icon: "map",
+            title: "No Venues Found",
+            message: "Check back later for new venues"
+        )
     }
     
     private var venueListView: some View {
@@ -157,7 +157,21 @@ struct VenueFeedView: View {
             .padding(.vertical)
         }
         .refreshable {
+            // Haptic feedback on refresh start
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+            
             await viewModel.refresh()
+        }
+        .overlay(alignment: .top) {
+            // Last updated timestamp
+            if let _ = viewModel.lastUpdated {
+                Text("Last updated: \(viewModel.lastUpdatedText)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 8)
+                    .opacity(viewModel.isLoading ? 0 : 1)
+            }
         }
     }
     
@@ -199,32 +213,56 @@ struct VenueFeedView: View {
     
     private var allVenuesSection: some View {
         Group {
-            // Section header (only show if recommendations exist)
-            if !viewModel.recommendations.isEmpty {
-                HStack {
-                    Text("All Venues")
-                        .font(.title2)
-                        .fontWeight(.bold)
+            // Section header with filter (only show if recommendations exist or venues exist)
+            if !viewModel.recommendations.isEmpty || !viewModel.venues.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("All Venues")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
+                    .padding(.horizontal)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    // Category Filter Bar
+                    if !viewModel.availableCategories.isEmpty {
+                        CategoryFilterView(
+                            categories: viewModel.availableCategories,
+                            categoryCounts: viewModel.categoryCounts,
+                            selectedCategory: $viewModel.selectedCategory
+                        )
+                    }
                 }
-                .padding(.horizontal)
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            // Filter out venues already shown in recommendations
-            ForEach(filteredVenues) { venue in
-                NavigationLink(destination: VenueDetailView(venueId: venue.id)) {
-                    VenueCardView(
-                        venue: venue,
-                        onInterestToggled: {
-                            Task {
-                                // Refresh after interest toggle
-                                await viewModel.loadRecommendations()
-                            }
-                        }
+            // Check if filtered venues is empty
+            if filteredVenues.isEmpty {
+                // Show empty state for filtered results
+                if viewModel.selectedCategory != nil {
+                    EmptyStateView(
+                        icon: "line.3.horizontal.decrease.circle",
+                        title: "No \(viewModel.selectedCategory ?? "") Venues",
+                        message: "Try another filter to discover more venues"
                     )
+                    .padding(.top, 40)
                 }
-                .buttonStyle(PlainButtonStyle())
-                .padding(.horizontal)
+            } else {
+                // Show filtered venues
+                ForEach(filteredVenues) { venue in
+                    NavigationLink(destination: VenueDetailView(venueId: venue.id)) {
+                        VenueCardView(
+                            venue: venue,
+                            onInterestToggled: {
+                                Task {
+                                    // Refresh after interest toggle
+                                    await viewModel.loadRecommendations()
+                                }
+                            }
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.horizontal)
+                }
             }
         }
     }

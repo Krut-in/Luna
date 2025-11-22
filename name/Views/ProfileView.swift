@@ -46,6 +46,7 @@ struct ProfileView: View {
     // MARK: - Properties
     
     @StateObject private var viewModel = ProfileViewModel()
+    @ObservedObject private var appState = AppState.shared
     
     // MARK: - Body
     
@@ -208,26 +209,37 @@ struct ProfileView: View {
                                 }
                             } else {
                                 // Empty State
-                                VStack(spacing: 16) {
-                                    Image(systemName: "heart.slash")
-                                        .font(.system(size: 48))
-                                        .foregroundColor(.gray)
-                                    
-                                    Text("No Saved Places")
-                                        .font(.headline)
-                                    
-                                    Text("Explore venues and tap the heart to save them")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                        .multilineTextAlignment(.center)
-                                }
+                                EmptyStateView(
+                                    icon: "heart.slash",
+                                    title: "No Saved Places",
+                                    message: "Explore venues and tap the heart to save them",
+                                    actionTitle: "Explore Venues",
+                                    action: {
+                                        // Navigate to Discover tab
+                                        appState.selectedTab = 0
+                                    }
+                                )
                                 .padding()
                             }
                         }
                         .padding(.bottom, 20)
                     }
                     .refreshable {
+                        // Haptic feedback on refresh start
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
+                        
                         await viewModel.refresh()
+                    }
+                    .overlay(alignment: .top) {
+                        // Last updated timestamp
+                        if let _ = viewModel.lastUpdated {
+                            Text("Last updated: \(viewModel.lastUpdatedText)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 8)
+                                .opacity(viewModel.isLoading ? 0 : 1)
+                        }
                     }
                 }
             }

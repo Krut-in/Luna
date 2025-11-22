@@ -26,14 +26,13 @@ struct ContentView: View {
     
     // MARK: - Properties
     
-    @State private var selectedTab = 0
     @ObservedObject private var appState = AppState.shared
     
     // MARK: - Body
     
     var body: some View {
         ZStack {
-            TabView(selection: $selectedTab) {
+            TabView(selection: $appState.selectedTab) {
                 // Discover Tab
                 VenueFeedView()
                     .tabItem {

@@ -60,6 +60,8 @@ class VenueFeedViewModel: ObservableObject {
     @Published var recommendations: [RecommendationItem] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var selectedCategory: String? = nil
+    @Published var lastUpdated: Date? = nil
     
     // MARK: - Private Properties
     
@@ -91,6 +93,7 @@ class VenueFeedViewModel: ObservableObject {
             await MainActor.run {
                 self.venues = sortVenuesByRecommendation(fetchedVenues)
                 self.isLoading = false
+                self.lastUpdated = Date()
             }
         } catch let error as APIError {
             // Handle API-specific errors
@@ -158,6 +161,44 @@ class VenueFeedViewModel: ObservableObject {
     /// Returns recommendation score for a venue if available
     func recommendationScore(for venueId: String) -> Double? {
         return recommendationScores[venueId]
+    }
+    
+    /// Returns unique categories from all venues
+    var availableCategories: [String] {
+        let categories = Set(venues.map { $0.category })
+        return Array(categories).sorted()
+    }
+    
+    /// Returns count of venues per category
+    var categoryCounts: [String: Int] {
+        var counts: [String: Int] = [:]
+        for venue in venues {
+            counts[venue.category, default: 0] += 1
+        }
+        return counts
+    }
+    
+    /// Returns formatted relative time since last update
+    var lastUpdatedText: String {
+        guard let lastUpdated = lastUpdated else {
+            return "Never"
+        }
+        
+        let now = Date()
+        let seconds = Int(now.timeIntervalSince(lastUpdated))
+        
+        if seconds < 60 {
+            return "Just now"
+        } else if seconds < 3600 {
+            let minutes = seconds / 60
+            return "\(minutes) minute\(minutes == 1 ? "" : "s") ago"
+        } else if seconds < 86400 {
+            let hours = seconds / 3600
+            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
+        } else {
+            let days = seconds / 86400
+            return "\(days) day\(days == 1 ? "" : "s") ago"
+        }
     }
     
     // MARK: - Private Methods

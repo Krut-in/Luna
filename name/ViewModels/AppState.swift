@@ -49,6 +49,9 @@ class AppState: ObservableObject {
     @Published var pendingActionItem: ActionItem?
     @Published var showActionItemToast = false
     
+    /// Selected tab index for tab navigation
+    @Published var selectedTab: Int = 0
+    
     // MARK: - Private Properties
     
     private let apiService: APIServiceProtocol

@@ -45,6 +45,7 @@ struct VenueDetailView: View {
     @ObservedObject private var appState = AppState.shared
     @Environment(\.dismiss) private var dismiss
     @State private var isButtonPressed = false
+    @State private var showShareSheet = false
     
     // MARK: - Initialization
     
@@ -79,19 +80,41 @@ struct VenueDetailView: View {
                             }
                         }
                         
-                        // Back button overlay
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.primary)
-                                .frame(width: 36, height: 36)
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        // Button overlay container
+                        HStack {
+                            // Back button
+                            Button {
+                                dismiss()
+                            } label: {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                    .frame(width: 36, height: 36)
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                            }
+                            
+                            Spacer()
+                            
+                            // Share button
+                            Button {
+                                // Haptic feedback
+                                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                impactFeedback.impactOccurred()
+                                
+                                showShareSheet = true
+                            } label: {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                    .frame(width: 36, height: 36)
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                            }
                         }
-                        .padding([.leading, .top], 16)
+                        .padding([.leading, .trailing, .top], 16)
                     }
                     
                     // Content
@@ -280,6 +303,11 @@ struct VenueDetailView: View {
         .task {
             await viewModel.loadVenueDetail()
         }
+        .sheet(isPresented: $showShareSheet) {
+            if let venue = viewModel.venue {
+                ShareSheet(venue: venue)
+            }
+        }
     }
     
     // MARK: - Helper Methods
@@ -297,6 +325,38 @@ struct VenueDetailView: View {
         default:
             return Color.gray
         }
+    }
+}
+
+// MARK: - Share Sheet Wrapper
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let venue: Venue
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        // Format share text
+        let shareText = "Check out \(venue.name) - \(venue.category) at \(venue.address)! 🎉"
+        
+        // Create activity items (text and optionally image)
+        var activityItems: [Any] = [shareText]
+        
+        // Try to load image if URL is valid
+        if let imageURL = URL(string: venue.image),
+           let imageData = try? Data(contentsOf: imageURL),
+           let image = UIImage(data: imageData) {
+            activityItems.append(image)
+        }
+        
+        let activityViewController = UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: nil
+        )
+        
+        return activityViewController
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
+        // No update needed
     }
 }
 
