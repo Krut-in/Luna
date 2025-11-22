@@ -48,7 +48,6 @@ protocol APIServiceProtocol {
 
 // MARK: - API Service Implementation
 
-@MainActor
 class APIService: ObservableObject, APIServiceProtocol {
     
     // MARK: - Properties
