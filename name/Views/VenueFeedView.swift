@@ -16,7 +16,7 @@ struct VenueFeedView: View {
     // MARK: - Body
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 if viewModel.isLoading && viewModel.venues.isEmpty {
                     // Show loading indicator when initially loading
