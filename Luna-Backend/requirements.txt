@@ -2,11 +2,16 @@
 # Production-ready FastAPI application dependencies
 
 # Core Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
 
 # Data Validation
-pydantic==2.5.0
+pydantic==2.9.0
+
+# Database (SQLite with async support)
+sqlalchemy==2.0.35
+aiosqlite==0.20.0
+greenlet==3.1.1
 
 # CORS Middleware (already included in fastapi)
 # python-multipart for form data (optional)
@@ -14,7 +19,6 @@ pydantic==2.5.0
 # Production Dependencies (uncomment for production deployment):
 # gunicorn==21.2.0  # Production WSGI server
 # python-dotenv==1.0.0  # Environment variable management
-# sqlalchemy==2.0.23  # Database ORM
 # psycopg2-binary==2.9.9  # PostgreSQL adapter
 # alembic==1.12.1  # Database migrations
 # redis==5.0.1  # Caching layer

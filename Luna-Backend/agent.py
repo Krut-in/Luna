@@ -95,5 +95,5 @@ def action_item_agent(
         "action_type": action_type,
         "interested_user_ids": interested_user_ids,
         "threshold_met": True,
-        "created_at": datetime.now().isoformat()
+        "created_at": datetime.now()  # Return datetime object, not ISO string
     }
