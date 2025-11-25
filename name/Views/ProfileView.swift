@@ -260,13 +260,9 @@ struct ProfileView: View {
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.large)
             .task {
+                // Load profile once when view appears in NavigationStack
+                // .task runs on view appearance and cancels automatically on disappearance
                 await viewModel.loadProfile()
-            }
-            .onAppear {
-                // Reload profile when view appears to show latest interests
-                Task {
-                    await viewModel.loadProfile()
-                }
             }
             .alert("Error", isPresented: .constant(viewModel.errorMessage != nil && viewModel.user != nil)) {
                 Button("OK") {

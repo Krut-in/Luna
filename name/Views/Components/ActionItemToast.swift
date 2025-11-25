@@ -49,6 +49,7 @@ struct ActionItemToast: View {
     
     @State private var confettiParticles: [ConfettiParticle] = []
     @State private var animateConfetti = false
+    @State private var dismissTask: Task<Void, Never>?
     
     var body: some View {
         ZStack {
@@ -87,12 +88,15 @@ struct ActionItemToast: View {
                     }
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isShowing)
-                    .onAppear {
-                        triggerEffects()
-                        startAutoDismissTimer()
-                    }
                 }
                 Spacer()
+            }
+        }
+        .onChange(of: isShowing) { _, newValue in
+            // Trigger effects only when toast is shown (not when hidden)
+            if newValue {
+                triggerEffects()
+                startAutoDismissTimer()
             }
         }
     }
@@ -180,8 +184,16 @@ struct ActionItemToast: View {
     }
     
     private func startAutoDismissTimer() {
-        Task {
+        // Cancel any existing dismiss task to prevent duplicates
+        dismissTask?.cancel()
+        
+        // Create new dismiss task with cancellation support
+        dismissTask = Task {
             try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+            
+            // Check if task was cancelled during sleep
+            guard !Task.isCancelled else { return }
+            
             await MainActor.run {
                 dismissToast()
             }
@@ -189,11 +201,15 @@ struct ActionItemToast: View {
     }
     
     private func dismissToast() {
+        // Cancel the auto-dismiss task to prevent double dismissal
+        dismissTask?.cancel()
+        dismissTask = nil
+        
         withAnimation(.easeOut(duration: 0.3)) {
             isShowing = false
         }
         
-        // Clear action item and confetti after animation
+        // Clear action item and confetti after animation completes
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             actionItem = nil
             confettiParticles = []

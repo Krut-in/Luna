@@ -30,8 +30,9 @@ import Foundation
 import Combine
 
 /// Shared application state for managing user data and interests across views
+/// Thread safety is guaranteed by @MainActor isolation - all access occurs on main thread
 @MainActor
-class AppState: ObservableObject, @unchecked Sendable {
+class AppState: ObservableObject {
     
     // MARK: - Singleton
     
