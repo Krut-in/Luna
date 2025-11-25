@@ -108,7 +108,7 @@ struct ProfileView: View {
                                             }
                                     }
                                 }
-                                .shadow(color: Theme.Colors.shadow, radius: 8, x: 0, y: 4)
+                                .elevationMedium()
                                 
                                 // User Name
                                 Text(user.name)
@@ -144,6 +144,10 @@ struct ProfileView: View {
                                         }
                                     }
                                 }
+                                
+                                // Theme Toggle (subtle, minimal design)
+                                ProfileThemeToggle()
+                                    .padding(.top, 12)
                             }
                             .padding(.top, 20)
                             
@@ -360,7 +364,7 @@ struct ActionItemCard: View {
         .padding(Theme.Layout.padding)
         .background(Theme.Colors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Layout.cornerRadius))
-        .shadow(color: Theme.Colors.shadow, radius: 8, x: 0, y: 2)
+        .elevationMedium()
     }
     
     private func relativeTime(from dateString: String) -> String {
@@ -433,9 +437,59 @@ struct VenueGridCard: View {
         }
         .background(Theme.Colors.cardBackground)
         .cornerRadius(Theme.Layout.cornerRadius)
-        .shadow(color: Theme.Colors.shadow, radius: 8, x: 0, y: 2)
+        .elevationMedium()
     }
 }
+
+// MARK: - Profile Theme Toggle
+
+/// Minimal centered theme toggle: ☀️ Light | Toggle | Dark 🌙
+struct ProfileThemeToggle: View {
+    
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Light mode indicator
+            HStack(spacing: 4) {
+                Image(systemName: "sun.max.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(themeManager.isDarkMode ? Theme.Colors.textTertiary : Theme.Colors.warning)
+                
+                Text("Light")
+                    .font(.system(size: 13))
+                    .foregroundColor(themeManager.isDarkMode ? Theme.Colors.textTertiary : Theme.Colors.textSecondary)
+            }
+            
+            // Center toggle
+            Toggle("", isOn: Binding(
+                get: { themeManager.isDarkMode },
+                set: { _ in
+                    withAnimation(Theme.Animation.default) {
+                        themeManager.toggleTheme()
+                    }
+                }
+            ))
+            .labelsHidden()
+            .tint(Theme.Colors.primary)
+            .scaleEffect(0.8)
+            
+            // Dark mode indicator
+            HStack(spacing: 4) {
+                Text("Dark")
+                    .font(.system(size: 13))
+                    .foregroundColor(themeManager.isDarkMode ? Theme.Colors.textSecondary : Theme.Colors.textTertiary)
+                
+                Image(systemName: "moon.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(themeManager.isDarkMode ? Theme.Colors.info : Theme.Colors.textTertiary)
+            }
+        }
+        .padding(.horizontal, 8)
+    }
+}
+
+
 
 // MARK: - Preview
 

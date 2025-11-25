@@ -96,7 +96,7 @@ struct VenueDetailView: View {
                                     .frame(width: 36, height: 36)
                                     .background(Theme.Colors.cardBackground)
                                     .clipShape(Circle())
-                                    .shadow(color: Theme.Colors.shadow, radius: 4, x: 0, y: 2)
+                                    .elevationLow()
                             }
                             
                             Spacer()
@@ -115,7 +115,7 @@ struct VenueDetailView: View {
                                     .frame(width: 36, height: 36)
                                     .background(Theme.Colors.cardBackground)
                                     .clipShape(Circle())
-                                    .shadow(color: Theme.Colors.shadow, radius: 4, x: 0, y: 2)
+                                    .elevationLow()
                             }
                         }
                         .padding([.leading, .trailing, .top], Theme.Layout.padding)
@@ -366,14 +366,18 @@ struct VenueDetailView: View {
     
     private func categoryColor(for category: String) -> Color {
         switch category.lowercased() {
-        case "coffee shop", "coffee":
-            return Color.brown
-        case "restaurant", "food":
-            return Theme.Colors.warning
-        case "bar":
-            return Color.purple
-        case "cultural", "museum":
-            return Theme.Colors.info
+        case "coffee shop", "coffee", "café", "cafe":
+            return Theme.Colors.Category.coffee
+        case "restaurant", "food", "dining":
+            return Theme.Colors.Category.restaurant
+        case "bar", "nightlife", "pub", "lounge":
+            return Theme.Colors.Category.bar
+        case "museum", "cultural", "culture", "art", "gallery":
+            return Theme.Colors.Category.cultural
+        case "park", "outdoor", "nature":
+            return Theme.Colors.Category.outdoor
+        case "entertainment", "theater", "cinema":
+            return Theme.Colors.Category.entertainment
         default:
             return Theme.Colors.textSecondary
         }

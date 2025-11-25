@@ -208,7 +208,9 @@ struct VenueCardView: View {
         }
         .background(Theme.Colors.cardBackground)
         .cornerRadius(Theme.Layout.cornerRadius)
-        .shadow(color: Theme.Colors.shadow, radius: 8, x: 0, y: 4)
+        .elevationMedium()
+        .transition(.scale(scale: 0.95).combined(with: .opacity))
+        .animation(Theme.Animation.spring, value: localInterestedCount)
     }
     
     // MARK: - Helper Methods
@@ -295,17 +297,17 @@ struct VenueCardView: View {
     private func categoryColor(for category: String) -> Color {
         switch category.lowercased() {
         case "coffee shop", "coffee", "café", "cafe":
-            return Theme.Colors.accent
+            return Theme.Colors.Category.coffee
         case "restaurant", "food", "dining":
-            return Theme.Colors.warning
+            return Theme.Colors.Category.restaurant
         case "bar", "nightlife", "pub", "lounge":
-            return Color.purple // Keep custom if not in Theme
+            return Theme.Colors.Category.bar
         case "museum", "cultural", "culture", "art", "gallery":
-            return Theme.Colors.success
+            return Theme.Colors.Category.cultural
         case "park", "outdoor", "nature":
-            return Color.teal
+            return Theme.Colors.Category.outdoor
         case "entertainment", "theater", "cinema":
-            return Color.pink
+            return Theme.Colors.Category.entertainment
         default:
             return Theme.Colors.textSecondary
         }

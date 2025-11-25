@@ -114,7 +114,7 @@ class APIService: ObservableObject, APIServiceProtocol {
     
     // MARK: - Initialization
     
-    init(baseURL: String = "http://localhost:8000", session: URLSession = .shared) {
+    nonisolated init(baseURL: String = "http://localhost:8000", session: URLSession = .shared) {
         self.baseURL = baseURL
         
         // Configure session with timeout for production

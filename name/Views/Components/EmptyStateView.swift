@@ -50,6 +50,7 @@ struct EmptyStateView: View {
             Image(systemName: icon)
                 .font(.system(size: 64))
                 .foregroundColor(Theme.Colors.textSecondary.opacity(0.6))
+                .symbolEffect(.pulse.byLayer, options: .repeating)
             
             Text(title)
                 .font(Theme.Fonts.title3)
@@ -70,14 +71,18 @@ struct EmptyStateView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(Theme.Colors.primary)
-                        .clipShape(Capsule())
+                        .background(
+                            Capsule()
+                                .fill(Theme.Colors.primary)
+                                .elevationMedium()
+                        )
                 }
+                .buttonStyle(.plain)
                 .padding(.top, 8)
             }
         }
         .padding()
-        .transition(.opacity)
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
     
     // MARK: - Convenience Initializers

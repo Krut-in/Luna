@@ -134,7 +134,7 @@ struct RecommendedVenueCardView: View {
                     case .empty:
                         // Placeholder while loading
                         Rectangle()
-                            .fill(Color.gray.opacity(0.2))
+                            .fill(Theme.Colors.secondaryBackground)
                             .aspectRatio(4/3, contentMode: .fill)
                             .overlay {
                                 ProgressView()
@@ -147,17 +147,17 @@ struct RecommendedVenueCardView: View {
                     case .failure:
                         // Failed to load image - show placeholder
                         Rectangle()
-                            .fill(Color.gray.opacity(0.2))
+                            .fill(Theme.Colors.secondaryBackground)
                             .aspectRatio(4/3, contentMode: .fill)
                             .overlay {
                                 Image(systemName: "photo")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.gray)
+                                    .font(Theme.Fonts.largeTitle)
+                                    .foregroundColor(Theme.Colors.textSecondary)
                             }
                     @unknown default:
                         // Fallback for future AsyncImagePhase cases
                         Rectangle()
-                            .fill(Color.gray.opacity(0.2))
+                            .fill(Theme.Colors.secondaryBackground)
                             .aspectRatio(4/3, contentMode: .fill)
                     }
                 }
@@ -186,14 +186,15 @@ struct RecommendedVenueCardView: View {
             VStack(alignment: .leading, spacing: 8) {
                 // MARK: Category Badge and Heart Button Row
                 HStack {
-                    // Category Badge
+                    // MARK: Category Badge
                     Text(recommendation.venue.category)
-                        .font(.caption)
+                        .font(Theme.Fonts.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(categoryColor(for: recommendation.venue.category))
+                        .elevationSmall()
                         .clipShape(Capsule())
                         .accessibilityLabel("Category: \(recommendation.venue.category)")
                     
@@ -205,7 +206,7 @@ struct RecommendedVenueCardView: View {
                     } label: {
                         Image(systemName: isInterested ? "heart.fill" : "heart")
                             .font(.system(size: 20))
-                            .foregroundColor(isInterested ? .red : .gray)
+                            .foregroundColor(isInterested ? Theme.Colors.error : Theme.Colors.textSecondary)
                             .frame(width: 44, height: 44)
                     }
                     .scaleEffect(isAnimating ? 1.2 : 1.0)
@@ -217,15 +218,15 @@ struct RecommendedVenueCardView: View {
                 
                 // MARK: Venue Name
                 Text(recommendation.venue.name)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.primary)
+                    .font(Theme.Fonts.title3)
+                    .foregroundColor(Theme.Colors.textPrimary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 // MARK: Recommendation Reason
                 Text(recommendation.reason)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(Theme.Fonts.subheadline)
+                    .foregroundColor(Theme.Colors.textSecondary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityLabel("Recommended because: \(recommendation.reason)")
@@ -233,11 +234,11 @@ struct RecommendedVenueCardView: View {
                 // MARK: Interested Count
                 HStack(spacing: 4) {
                     Image(systemName: "person.2")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(Theme.Fonts.caption)
+                        .foregroundColor(Theme.Colors.textSecondary)
                     Text(interestedCountText)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(Theme.Fonts.subheadline)
+                        .foregroundColor(Theme.Colors.textSecondary)
                 }
                 .padding(.bottom, 12)
                 .accessibilityElement(children: .combine)
@@ -245,21 +246,22 @@ struct RecommendedVenueCardView: View {
             }
             .padding(.horizontal, 16)
         }
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .background(Theme.Colors.cardBackground)
+        .cornerRadius(Theme.Layout.cornerRadius)
         .overlay(
             // Gradient border to distinguish recommended venues
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: Theme.Layout.cornerRadius)
                 .stroke(
                     LinearGradient(
-                        colors: [Color.green.opacity(0.3), Color.teal.opacity(0.3)],
+                        colors: [Theme.Colors.success.opacity(0.3), Theme.Colors.Category.outdoor.opacity(0.3)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: Color.green.opacity(0.1), radius: 8, x: 0, y: 4)
+        .elevationMedium()
+        .transition(.scale(scale: 0.95).combined(with: .opacity))
     }
     
     // MARK: - Helper Methods
@@ -350,19 +352,19 @@ struct RecommendedVenueCardView: View {
     private func categoryColor(for category: String) -> Color {
         switch category.lowercased() {
         case "coffee shop", "coffee", "café", "cafe":
-            return Color.blue
+            return Theme.Colors.Category.coffee
         case "restaurant", "food", "dining":
-            return Color.orange
+            return Theme.Colors.Category.restaurant
         case "bar", "nightlife", "pub", "lounge":
-            return Color.purple
+            return Theme.Colors.Category.bar
         case "museum", "cultural", "culture", "art", "gallery":
-            return Color.green
+            return Theme.Colors.Category.cultural
         case "park", "outdoor", "nature":
-            return Color.teal
+            return Theme.Colors.Category.outdoor
         case "entertainment", "theater", "cinema":
-            return Color.pink
+            return Theme.Colors.Category.entertainment
         default:
-            return Color.gray
+            return Theme.Colors.textSecondary
         }
     }
 }
