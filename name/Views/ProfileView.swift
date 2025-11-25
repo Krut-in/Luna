@@ -464,15 +464,15 @@ struct ProfileThemeToggle: View {
     @EnvironmentObject var themeManager: ThemeManager
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 4) {
             // Light mode indicator
-            HStack(spacing: 4) {
+            HStack(spacing: 2) {
                 Image(systemName: "sun.max.fill")
-                    .font(.system(size: 14))
+                    .font(.system(size: 8))
                     .foregroundColor(themeManager.isDarkMode ? Theme.Colors.textTertiary : Theme.Colors.warning)
                 
                 Text("Light")
-                    .font(.system(size: 13))
+                    .font(.system(size: 11))
                     .foregroundColor(themeManager.isDarkMode ? Theme.Colors.textTertiary : Theme.Colors.textSecondary)
             }
             
@@ -487,20 +487,20 @@ struct ProfileThemeToggle: View {
             ))
             .labelsHidden()
             .tint(Theme.Colors.primary)
-            .scaleEffect(0.8)
+            .scaleEffect(0.55)
             
             // Dark mode indicator
-            HStack(spacing: 4) {
+            HStack(spacing: 2) {
                 Text("Dark")
-                    .font(.system(size: 13))
+                    .font(.system(size: 11))
                     .foregroundColor(themeManager.isDarkMode ? Theme.Colors.textSecondary : Theme.Colors.textTertiary)
                 
                 Image(systemName: "moon.fill")
-                    .font(.system(size: 14))
+                    .font(.system(size: 8))
                     .foregroundColor(themeManager.isDarkMode ? Theme.Colors.info : Theme.Colors.textTertiary)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 2)
     }
 }
 
