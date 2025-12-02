@@ -149,27 +149,28 @@ struct RecommendedFeedView: View {
         ScrollView {
             LazyVStack(spacing: Theme.Layout.spacing) {
                 // Header Section with Sort Menu
-                HStack {
-                    Text("For You")
-                        .font(Theme.Fonts.title2)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    SortMenu(selectedSort: $viewModel.sortBy) {
-                        viewModel.applySort()
+                VStack(spacing: Theme.Layout.spacing) {
+                    HStack {
+                        Text("For You")
+                            .font(Theme.Fonts.title2)
+                            .fontWeight(.bold)
+                        
+                        Spacer()
+                        
+                        SortMenu(selectedSort: $viewModel.sortBy) {
+                            viewModel.applySort()
+                        }
                     }
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
-                
-                // Category Filter Bar
-                if !viewModel.availableCategories.isEmpty {
-                    CategoryFilterView(
-                        categories: viewModel.availableCategories,
-                        categoryCounts: viewModel.categoryCounts,
-                        selectedCategory: $viewModel.selectedCategory
-                    )
+                    .padding(.horizontal)
+                    
+                    // Category Filter Bar
+                    if !viewModel.availableCategories.isEmpty {
+                        CategoryFilterView(
+                            categories: viewModel.availableCategories,
+                            categoryCounts: viewModel.categoryCounts,
+                            selectedCategory: $viewModel.selectedCategory
+                        )
+                    }
                 }
                 
                 // Check if filtered recommendations is empty

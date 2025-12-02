@@ -200,7 +200,7 @@ struct RecommendedVenueCardView: View {
             }
             
             // MARK: Venue Info Section
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Theme.Layout.smallSpacing) {
                 // MARK: Category Badge and Heart Button Row
                 HStack {
                     // MARK: Category Badge
@@ -231,7 +231,7 @@ struct RecommendedVenueCardView: View {
                     .accessibilityLabel(isInterested ? "Remove from interested venues" : "Mark as interested")
                     .accessibilityHint("Double tap to toggle interest")
                 }
-                .padding(.top, 12)
+                .padding(.top, Theme.Layout.spacing)
                 
                 // MARK: Venue Name
                 Text(recommendation.venue.name)
@@ -257,11 +257,11 @@ struct RecommendedVenueCardView: View {
                         .font(Theme.Fonts.subheadline)
                         .foregroundColor(Theme.Colors.textSecondary)
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, Theme.Layout.spacing)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(interestedCountText)
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Theme.Layout.padding)
         }
         .background(Theme.Colors.cardBackground)
         .cornerRadius(Theme.Layout.cornerRadius)
