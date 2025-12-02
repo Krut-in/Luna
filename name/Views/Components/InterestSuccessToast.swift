@@ -6,14 +6,20 @@
 //
 //  DESCRIPTION:
 //  Toast notification component for celebrating successful venue interest toggle.
-//  Shows a delightful top notification with confetti animation and haptic feedback.
+//  Shows a delightful bottom notification with party popper confetti animation and haptic feedback.
 //  
 //  DESIGN SPECIFICATIONS:
-//  - Position: Top of screen, centered horizontally (50pt below status bar)
-//  - Animation: Slide down entry with spring, fade out exit
-//  - Confetti: Upward particles from below toast
+//  - Position: Bottom of screen, centered horizontally (50pt above safe area)
+//  - Animation: Slide up entry with spring, fade out exit
+//  - Confetti: Party popper effect with physics simulation (gravity, rotation, burst)
 //  - Haptic: Medium impact on appearance
-//  - Auto-dismiss: 2-3 seconds with smooth animation
+//  - Auto-dismiss: 2.5 seconds with smooth animation
+//  
+//  PHYSICS SIMULATION:
+//  - Initial burst velocity (upward + horizontal spread)
+//  - Gravity acceleration constant
+//  - Per-particle rotation during fall
+//  - Multiple shapes (circles, squares, triangles)
 //  
 //  USAGE:
 //  InterestSuccessToast(isShowing: $viewModel.showInterestToast)
@@ -22,51 +28,95 @@
 
 import SwiftUI
 
+// MARK: - Enhanced Confetti Particle with Physics
+
+struct PhysicsConfettiParticle: Identifiable {
+    let id = UUID()
+    var x: CGFloat
+    var y: CGFloat
+    var velocityX: CGFloat
+    var velocityY: CGFloat
+    let color: Color
+    let size: CGFloat
+    var rotation: Double
+    let rotationSpeed: Double
+    let shape: ParticleShape
+    
+    enum ParticleShape {
+        case circle, square, triangle
+    }
+}
+
 // MARK: - Interest Success Toast
 
 struct InterestSuccessToast: View {
     @Binding var isShowing: Bool
     
-    @State private var confettiParticles: [ConfettiParticle] = []
-    @State private var animateConfetti = false
+    @State private var confettiParticles: [PhysicsConfettiParticle] = []
+    @State private var popperOffset: CGFloat = 0
+    @State private var popperOpacity: Double = 0
     @State private var dismissTask: Task<Void, Never>?
+    @State private var animationTimer: Timer?
+    
+    // Physics constants
+    private let gravity: CGFloat = 400 // pts/s²
+    private let frameRate: Double = 1.0 / 60.0 // 60 fps
     
     var body: some View {
         ZStack {
             VStack {
+                Spacer()
+                
                 if isShowing {
                     ZStack {
-                        // Confetti particles
+                        // Confetti particles with physics
                         ForEach(confettiParticles) { particle in
-                            Circle()
-                                .fill(particle.color)
-                                .frame(width: particle.size, height: particle.size)
+                            particleView(for: particle)
+                                .offset(x: particle.x, y: particle.y)
                                 .rotationEffect(.degrees(particle.rotation))
-                                .offset(
-                                    x: particle.x,
-                                    y: animateConfetti ? particle.y - 200 : particle.y
-                                )
-                                .opacity(animateConfetti ? 0 : 1)
-                                .animation(
-                                    .easeOut(duration: 1.2)
-                                        .delay(particle.delay),
-                                    value: animateConfetti
-                                )
+                                .opacity(particle.y < -100 ? 0 : 1) // Fade out when too far
                         }
+                        
+                        // Party popper emoji
+                        Text("🎉")
+                            .font(.system(size: 60))
+                            .offset(y: popperOffset)
+                            .opacity(popperOpacity)
                         
                         // Toast content
                         toastContent
                     }
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                     .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isShowing)
                 }
-                Spacer()
             }
         }
         .onChange(of: isShowing) { _, newValue in
             if newValue {
                 triggerEffects()
                 startAutoDismissTimer()
+            } else {
+                stopPhysicsAnimation()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func particleView(for particle: PhysicsConfettiParticle) -> some View {
+        Group {
+            switch particle.shape {
+            case .circle:
+                Circle()
+                    .fill(particle.color)
+                    .frame(width: particle.size, height: particle.size)
+            case .square:
+                Rectangle()
+                    .fill(particle.color)
+                    .frame(width: particle.size, height: particle.size)
+            case .triangle:
+                Triangle()
+                    .fill(particle.color)
+                    .frame(width: particle.size, height: particle.size)
             }
         }
     }
@@ -74,10 +124,10 @@ struct InterestSuccessToast: View {
     @ViewBuilder
     private var toastContent: some View {
         HStack(spacing: 12) {
-            // Icon
-            Image(systemName: "checkmark.circle.fill")
+            // Star icon (yellow/gold)
+            Image(systemName: "star.fill")
                 .font(.system(size: 24))
-                .foregroundColor(.green)
+                .foregroundColor(.yellow)
             
             // Content
             VStack(alignment: .leading, spacing: 4) {
@@ -105,41 +155,95 @@ struct InterestSuccessToast: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(.regularMaterial)
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(Color.green.opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: -4)
         )
         .padding(.horizontal, 16)
-        .padding(.top, 50) // Below status bar
+        .padding(.bottom, 50) // Above safe area
     }
     
     private func triggerEffects() {
-        // Haptic feedback - device shake
+        // Haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
         
-        // Generate confetti particles
-        generateConfetti()
+        // Generate confetti particles with initial velocities
+        generatePhysicsConfetti()
         
-        // Animate confetti upward
-        withAnimation {
-            animateConfetti = true
+        // Animate party popper
+        animatePartyPopper()
+        
+        // Start physics simulation
+        startPhysicsAnimation()
+    }
+    
+    private func generatePhysicsConfetti() {
+        confettiParticles = []
+        let toastYPosition: CGFloat = -120 // Approximate toast position (negative because from bottom)
+        
+        // Create 20 particles with varied properties
+        for _ in 0..<20 {
+            let particle = PhysicsConfettiParticle(
+                x: CGFloat.random(in: -20...20), // Start near center
+                y: toastYPosition - 30, // Start below toast
+                velocityX: CGFloat.random(in: -100...100), // Horizontal spread
+                velocityY: CGFloat.random(in: (-250)...(-150)), // Upward velocity (negative is up)
+                color: [Color.green, Color.yellow, Color.blue, Color.orange, Color.red].randomElement()!,
+                size: CGFloat.random(in: 6...12),
+                rotation: Double.random(in: 0...360),
+                rotationSpeed: Double.random(in: 180...360), // degrees per second
+                shape: [PhysicsConfettiParticle.ParticleShape.circle, .square, .triangle].randomElement()!
+            )
+            confettiParticles.append(particle)
         }
     }
     
-    private func generateConfetti() {
-        confettiParticles = []
-        let toastYPosition: CGFloat = 100 // Approximate toast position
+    private func animatePartyPopper() {
+        // Party popper shoots up and fades
+        withAnimation(.easeOut(duration: 0.3)) {
+            popperOpacity = 1.0
+            popperOffset = -100
+        }
         
-        // Create 15 particles (lighter than ActionItemToast)
-        for i in 0..<15 {
-            let particle = ConfettiParticle(
-                x: CGFloat.random(in: -150...150),
-                y: toastYPosition + 80, // Start below toast
-                color: [Theme.Colors.accent, Theme.Colors.primary, Theme.Colors.success].randomElement() ?? Theme.Colors.accent,
-                size: CGFloat.random(in: 4...8),
-                rotation: Double.random(in: 0...360),
-                delay: Double(i) * 0.02 // Stagger animation
-            )
-            confettiParticles.append(particle)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.easeIn(duration: 0.3)) {
+                popperOpacity = 0
+                popperOffset = -150
+            }
+        }
+        
+        // Reset popper after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            popperOffset = 0
+        }
+    }
+    
+    private func startPhysicsAnimation() {
+        // Use timer for smooth physics updates at 60fps
+        animationTimer = Timer.scheduledTimer(withTimeInterval: frameRate, repeats: true) { _ in
+            updatePhysics()
+        }
+    }
+    
+    private func stopPhysicsAnimation() {
+        animationTimer?.invalidate()
+        animationTimer = nil
+    }
+    
+    private func updatePhysics() {
+        for i in 0..<confettiParticles.count {
+            // Update velocities (gravity affects vertical velocity)
+            confettiParticles[i].velocityY += gravity * CGFloat(frameRate)
+            
+            // Update positions
+            confettiParticles[i].x += confettiParticles[i].velocityX * CGFloat(frameRate)
+            confettiParticles[i].y += confettiParticles[i].velocityY * CGFloat(frameRate)
+            
+            // Update rotation
+            confettiParticles[i].rotation += confettiParticles[i].rotationSpeed * frameRate
         }
     }
     
@@ -164,6 +268,9 @@ struct InterestSuccessToast: View {
         dismissTask?.cancel()
         dismissTask = nil
         
+        // Stop physics animation
+        stopPhysicsAnimation()
+        
         withAnimation(.easeOut(duration: 0.3)) {
             isShowing = false
         }
@@ -171,8 +278,22 @@ struct InterestSuccessToast: View {
         // Clear confetti after animation completes
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             confettiParticles = []
-            animateConfetti = false
+            popperOpacity = 0
+            popperOffset = 0
         }
+    }
+}
+
+// MARK: - Triangle Shape
+
+struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 

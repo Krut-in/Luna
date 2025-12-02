@@ -82,6 +82,7 @@ class ProfileViewModel: ObservableObject {
     private let apiService: APIServiceProtocol
     private let appState: AppState
     private var cancellables = Set<AnyCancellable>()
+    private var dismissingItems = Set<String>() // Track in-flight dismissals
     
     // MARK: - Initialization
     
@@ -128,32 +129,78 @@ class ProfileViewModel: ObservableObject {
         }
     }
     
-    /// Completes an action item
+    /// Completes an action item with optimistic UI update
     /// - Parameter itemId: The ID of the action item to complete
     func completeActionItem(_ itemId: String) async {
+        guard !dismissingItems.contains(itemId) else { return }
+        dismissingItems.insert(itemId)
+        
+        // Find item to complete
+        guard let itemIndex = actionItems.firstIndex(where: { $0.id == itemId }) else {
+            dismissingItems.remove(itemId)
+            return
+        }
+        
+        let removedItem = actionItems[itemIndex]
+        
+        // Optimistic update - remove immediately
+        actionItems.remove(at: itemIndex)
+        appState.actionItemCount = actionItems.count
+        
         do {
             _ = try await apiService.completeActionItem(itemId: itemId, userId: appState.currentUserId)
-            
-            // Remove from local list - already on main thread due to @MainActor
-            actionItems.removeAll { $0.id == itemId }
-            appState.actionItemCount = actionItems.count
+            // Success - item already removed
         } catch {
-            self.errorMessage = "Failed to complete action item: \(error.localizedDescription)"
+            // Rollback - restore item
+            actionItems.insert(removedItem, at: itemIndex)
+            appState.actionItemCount = actionItems.count
+            
+            // Set detailed error message
+            if let apiError = error as? APIError {
+                errorMessage = "Failed to complete action item: \(apiError.errorDescription ?? "Unknown error")"
+            } else {
+                errorMessage = "Failed to complete action item: \(error.localizedDescription)"
+            }
         }
+        
+        dismissingItems.remove(itemId)
     }
     
-    /// Dismisses an action item
+    /// Dismisses an action item with optimistic UI update
     /// - Parameter itemId: The ID of the action item to dismiss
     func dismissActionItem(_ itemId: String) async {
+        guard !dismissingItems.contains(itemId) else { return }
+        dismissingItems.insert(itemId)
+        
+        // Find item to dismiss
+        guard let itemIndex = actionItems.firstIndex(where: { $0.id == itemId }) else {
+            dismissingItems.remove(itemId)
+            return
+        }
+        
+        let removedItem = actionItems[itemIndex]
+        
+        // Optimistic update - remove immediately
+        actionItems.remove(at: itemIndex)
+        appState.actionItemCount = actionItems.count
+        
         do {
             _ = try await apiService.dismissActionItem(itemId: itemId, userId: appState.currentUserId)
-            
-            // Remove from local list - already on main thread due to @MainActor
-            actionItems.removeAll { $0.id == itemId }
-            appState.actionItemCount = actionItems.count
+            // Success - item already removed
         } catch {
-            self.errorMessage = "Failed to dismiss action item: \(error.localizedDescription)"
+            // Rollback - restore item
+            actionItems.insert(removedItem, at: itemIndex)
+            appState.actionItemCount = actionItems.count
+            
+            // Set detailed error message
+            if let apiError = error as? APIError {
+                errorMessage = "Failed to dismiss action item: \(apiError.errorDescription ?? "Unknown error")"
+            } else {
+                errorMessage = "Failed to dismiss action item: \(error.localizedDescription)"
+            }
         }
+        
+        dismissingItems.remove(itemId)
     }
     
     /// Refreshes the profile

@@ -246,6 +246,7 @@ struct VenueFeedView: View {
         MapFeedView(venues: filteredVenues) { venueId in
             selectedVenueId = venueId
         }
+        .id(filteredVenues.map { $0.id }) // Force recreation when venue list changes
     }
     
     private var allVenuesSection: some View {

@@ -66,6 +66,8 @@ enum APIError: LocalizedError {
                 return "Request timed out. Please try again."
             } else if nsError.code == NSURLErrorCannotConnectToHost {
                 return "Unable to connect to server. Please try again."
+            } else if nsError.code == NSURLErrorNetworkConnectionLost {
+                return "Network connection was lost. Please check your connection and try again."
             }
             return "Network error: \(error.localizedDescription)"
         case .decodingError(let error):
@@ -222,16 +224,16 @@ class APIService: ObservableObject, APIServiceProtocol {
         return try await performRequest(endpoint: "/venues/\(venueId)/booking", method: "GET")
     }
     
-    /// Completes an action item
+    /// Completes an action item with retry logic
     func completeActionItem(itemId: String, userId: String) async throws -> SuccessResponse {
         let requestBody = CompleteActionItemRequest(user_id: userId)
-        return try await performRequest(endpoint: "/action-items/\(itemId)/complete", method: "POST", body: requestBody)
+        return try await performRequestWithRetry(endpoint: "/action-items/\(itemId)/complete", method: "POST", body: requestBody)
     }
     
-    /// Dismisses an action item
+    /// Dismisses an action item with retry logic
     func dismissActionItem(itemId: String, userId: String) async throws -> SuccessResponse {
         let queryItems = [URLQueryItem(name: "user_id", value: userId)]
-        return try await performRequest(endpoint: "/action-items/\(itemId)", method: "DELETE", queryItems: queryItems)
+        return try await performRequestWithRetry(endpoint: "/action-items/\(itemId)", method: "DELETE", queryItems: queryItems)
     }
     
     /// Fetches social feed activities for a user
@@ -250,6 +252,52 @@ class APIService: ObservableObject, APIServiceProtocol {
     }
     
     // MARK: - Private Helper Methods
+    
+    /// Performs a network request with automatic retry on network errors
+    /// Uses exponential backoff: 0.5s, 1.0s, 2.0s delays for 3 total attempts
+    private func performRequestWithRetry<T: Decodable>(
+        endpoint: String,
+        method: String,
+        queryItems: [URLQueryItem]? = nil,
+        body: Encodable? = nil,
+        maxRetries: Int = 3
+    ) async throws -> T {
+        var lastError: APIError?
+        let retryDelays: [Double] = [0.5, 1.0, 2.0] // Exponential backoff delays in seconds
+        
+        for attempt in 0..<maxRetries {
+            do {
+                return try await performRequest(
+                    endpoint: endpoint,
+                    method: method,
+                    queryItems: queryItems,
+                    body: body
+                )
+            } catch let error as APIError {
+                lastError = error
+                
+                // Only retry on network errors, not server errors (4xx, 5xx)
+                switch error {
+                case .networkError:
+                    // Network error - retry if attempts remain
+                    if attempt < maxRetries - 1 {
+                        let delay = retryDelays[attempt]
+                        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                        continue
+                    }
+                case .serverError, .decodingError, .invalidURL, .noData, .unknown:
+                    // Don't retry on server errors or other non-network issues
+                    throw error
+                }
+            } catch {
+                // Unknown error type - don't retry
+                throw APIError.unknown
+            }
+        }
+        
+        // All retries exhausted
+        throw lastError ?? APIError.unknown
+    }
     
     /// Performs a network request with the given parameters
     private func performRequest<T: Decodable>(
