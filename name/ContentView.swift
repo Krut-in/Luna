@@ -53,6 +53,7 @@ struct ContentView: View {
                         Label("Social", systemImage: "person.2.fill")
                     }
                     .tag(2)
+                    .badge(appState.newSocialActivityCount > 0 ? appState.newSocialActivityCount : 0)
                 
                 // Profile Tab
                 ProfileView()

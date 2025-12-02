@@ -317,7 +317,15 @@ struct RecommendedVenueCardView: View {
         // Toggle interest via AppState (persists to API)
         Task {
             do {
-                let response = try await appState.toggleInterest(venueId: recommendation.venue.id)
+                // Create venue info for social feed broadcast
+                let venueInfo = ActivityVenue(
+                    id: recommendation.venue.id,
+                    name: recommendation.venue.name,
+                    category: recommendation.venue.category,
+                    image: recommendation.venue.image
+                )
+                
+                let response = try await appState.toggleInterest(venueId: recommendation.venue.id, venueInfo: venueInfo)
                 
                 // Check if operation was successful
                 if response.success {

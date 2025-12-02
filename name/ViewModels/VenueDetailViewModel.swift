@@ -147,7 +147,18 @@ class VenueDetailViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let response = try await appState.toggleInterest(venueId: venueId)
+            // Create venue info for social feed broadcast
+            var venueInfo: ActivityVenue? = nil
+            if let venue = venue {
+                venueInfo = ActivityVenue(
+                    id: venue.id,
+                    name: venue.name,
+                    category: venue.category,
+                    image: venue.image
+                )
+            }
+            
+            let response = try await appState.toggleInterest(venueId: venueId, venueInfo: venueInfo)
             
             // Reload venue details to get updated interested users count
             await loadVenueDetail()
