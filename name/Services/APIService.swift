@@ -114,6 +114,11 @@ protocol APIServiceProtocol {
     func fetchUserChats(userId: String) async throws -> [Chat]
     func fetchChatMessages(chatId: String, since: String?) async throws -> ChatMessagesResponse
     func sendMessage(chatId: String, userId: String, content: String) async throws -> SendMessageResponse
+    
+    // Archive Methods
+    func fetchArchivedActionItems(userId: String) async throws -> [ArchivedActionItem]
+    func deleteActionItemPermanently(itemId: String) async throws -> SuccessResponse
+    func expireOldActionItems() async throws -> ExpireActionItemsResponse
 }
 
 // MARK: - API Service Implementation
@@ -368,6 +373,39 @@ class APIService: ObservableObject, APIServiceProtocol {
             endpoint: "/chats/\(chatId)/messages",
             method: "POST",
             body: request
+        )
+    }
+    
+    // MARK: - Archive Methods
+    
+    /// Fetches archived action items for a user
+    /// - Parameter userId: User identifier
+    /// - Returns: Array of ArchivedActionItem objects
+    func fetchArchivedActionItems(userId: String) async throws -> [ArchivedActionItem] {
+        let response: ArchivedActionItemsResponse = try await performRequest(
+            endpoint: "/users/\(userId)/action-items/archived",
+            method: "GET"
+        )
+        return response.items
+    }
+    
+    /// Permanently deletes an action item from archive
+    /// - Parameter itemId: Action item identifier
+    /// - Returns: SuccessResponse indicating deletion result
+    func deleteActionItemPermanently(itemId: String) async throws -> SuccessResponse {
+        return try await performRequestWithRetry(
+            endpoint: "/action-items/\(itemId)/delete",
+            method: "DELETE"
+        )
+    }
+    
+    /// Triggers expiration check for old action items (90+ days)
+    /// Moves expired items to archive with "expired" status
+    /// - Returns: ExpireActionItemsResponse with list of expired item IDs
+    func expireOldActionItems() async throws -> ExpireActionItemsResponse {
+        return try await performRequest(
+            endpoint: "/action-items/expire",
+            method: "GET"
         )
     }
     

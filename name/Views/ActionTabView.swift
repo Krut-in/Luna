@@ -103,6 +103,14 @@ struct ActionTabView: View {
                     }
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: ArchiveView()) {
+                        Label("Archive", systemImage: "archivebox")
+                    }
+                    .accessibilityLabel("View archived items")
+                }
+            }
         }
     }
     

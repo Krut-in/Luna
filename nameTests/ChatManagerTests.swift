@@ -209,4 +209,14 @@ class MockChatAPIService: APIServiceProtocol {
     func getActionItemStatus(itemId: String) async throws -> ActionItemStatusResponse {
         throw APIError.unknown
     }
+    
+    // MARK: - Archive Methods (stubs)
+    
+    func fetchArchivedActionItems(userId: String) async throws -> [ArchivedActionItem] { [] }
+    func deleteActionItemPermanently(itemId: String) async throws -> SuccessResponse {
+        throw APIError.unknown
+    }
+    func expireOldActionItems() async throws -> ExpireActionItemsResponse {
+        ExpireActionItemsResponse(expired_ids: [], count: 0)
+    }
 }

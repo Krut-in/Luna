@@ -62,6 +62,9 @@ class AppState: ObservableObject {
     /// Active action items list
     @Published var activeActionItems: [ActionItem] = []
     
+    /// Archived action items list
+    @Published var archivedActionItems: [ArchivedActionItem] = []
+    
     /// Selected tab index for tab navigation
     @Published var selectedTab: Int = 0
     
@@ -184,6 +187,11 @@ class AppState: ObservableObject {
                 showActionItemNotification(actionItem)
             }
             
+            // Handle interest removal - update action items if user un-hearted
+            if wasInterested {
+                await handleInterestRemoval(venueId: venueId)
+            }
+            
             return response
         } catch {
             // Revert optimistic update on error
@@ -213,26 +221,76 @@ class AppState: ObservableObject {
     /// Switches to a different user and reloads data
     /// - Parameter userId: The user ID to switch to
     func switchUser(to userId: String) async {
+        // First, logout to clear all state
+        logout()
+        
+        // Set new user
         authService.switchUser(to: userId)
         currentUserId = authService.getCurrentUserId()
         updateCurrentUserInfo()
         
-        // Clear current state
+        // Reload data for new user
+        await loadUserInterests()
+        
+        // Check for expired items
+        await ActionItemExpirationManager.checkExpiredItems()
+    }
+    
+    /// Completely clears all user-specific state
+    /// Call this on logout or before switching users
+    func logout() {
+        // Clear user identity
+        currentUserId = ""
+        currentUserName = ""
+        currentUserAvatar = ""
+        
+        // Clear interests
         interestedVenueIds.removeAll()
-        actionItemCount = 0
         
         // Clear action items state
         pendingActionItem = nil
         showActionItemToast = false
+        actionItemCount = 0
         activeActionItems.removeAll()
+        archivedActionItems.removeAll()
         
-        // Clear social feed data for new user context
+        // Clear social feed data
         socialFeedActivities.removeAll()
         highlightedVenues.removeAll()
         newSocialActivityCount = 0
+        socialFeedLastViewed = nil
         
-        // Reload data for new user
-        await loadUserInterests()
+        // Reset navigation
+        selectedTab = 0
+        deepLinkVenueId = nil
+    }
+    
+    /// Handles interest removal and updates action items accordingly
+    /// - Parameter venueId: The venue ID that interest was removed from
+    func handleInterestRemoval(venueId: String) async {
+        // Check if this venue has an associated action item
+        if let actionItem = activeActionItems.first(where: { $0.venue_id == venueId }) {
+            // Refresh action item to get updated interested_user_ids
+            do {
+                let apiService = APIService()
+                let status = try await apiService.getActionItemStatus(itemId: actionItem.id)
+                
+                // Check if current user is still in the interested list
+                let userStillInterested = status.confirmations.contains { $0.user_id == currentUserId }
+                
+                if !userStillInterested {
+                    // Remove from active action items
+                    activeActionItems.removeAll { $0.id == actionItem.id }
+                    actionItemCount = activeActionItems.count
+                    print("🔄 Removed action item after interest removal: \(actionItem.id)")
+                }
+            } catch {
+                // If we can't fetch status, assume we should remove it to be safe
+                activeActionItems.removeAll { $0.id == actionItem.id }
+                actionItemCount = activeActionItems.count
+                print("⚠️ Error checking action item status, removing item: \(error.localizedDescription)")
+            }
+        }
     }
     
     /// Handles deep link navigation

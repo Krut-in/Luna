@@ -279,4 +279,24 @@ class MockAPIService: APIServiceProtocol {
         )
         return SendMessageResponse(success: true, message: message)
     }
+    
+    // MARK: - Archive Methods
+    
+    var mockArchivedItems: [ArchivedActionItem] = []
+    var mockExpireResponse: ExpireActionItemsResponse?
+    
+    func fetchArchivedActionItems(userId: String) async throws -> [ArchivedActionItem] {
+        if shouldFail { throw errorToThrow }
+        return mockArchivedItems
+    }
+    
+    func deleteActionItemPermanently(itemId: String) async throws -> SuccessResponse {
+        if shouldFail { throw errorToThrow }
+        return successResponse ?? SuccessResponse(success: true, message: "Item deleted")
+    }
+    
+    func expireOldActionItems() async throws -> ExpireActionItemsResponse {
+        if shouldFail { throw errorToThrow }
+        return mockExpireResponse ?? ExpireActionItemsResponse(expired_ids: [], count: 0)
+    }
 }

@@ -377,3 +377,49 @@ struct SendMessageResponse: Codable {
     let success: Bool
     let message: ChatMessage?
 }
+
+// MARK: - Archive Models
+
+/// Archived action item model
+struct ArchivedActionItem: Codable, Identifiable {
+    let id: String
+    let venue_id: String
+    let venue: Venue?
+    let status: String  // "completed", "dismissed", "expired"
+    let archived_at: String
+    let created_at: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case venue_id
+        case venue
+        case status
+        case archived_at
+        case created_at
+    }
+    
+    /// Formatted archived date for display
+    var formattedArchivedDate: String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: archived_at) {
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateStyle = .medium
+            displayFormatter.timeStyle = .short
+            return displayFormatter.string(from: date)
+        }
+        return archived_at
+    }
+}
+
+/// Response from GET /users/{userId}/action-items/archived endpoint
+struct ArchivedActionItemsResponse: Codable {
+    let items: [ArchivedActionItem]
+}
+
+/// Response from GET /action-items/expire endpoint
+struct ExpireActionItemsResponse: Codable {
+    let expired_ids: [String]
+    let count: Int
+}

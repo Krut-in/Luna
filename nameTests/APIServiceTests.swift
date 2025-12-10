@@ -203,7 +203,7 @@ final class APIServiceTests: XCTestCase {
             XCTFail("Should throw timeout error")
         } catch let error as APIError {
             if case .networkError = error {
-                XCTAssertTrue(error.localizedDescription?.contains("timed out") ?? false)
+                XCTAssertTrue(error.localizedDescription.contains("timed out"))
             } else {
                 XCTFail("Wrong error type")
             }

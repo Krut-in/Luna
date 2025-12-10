@@ -45,6 +45,9 @@ struct nameApp: App {
                     appState.handleDeepLink(url)
                 }
                 .task {
+                    // Check for expired action items on app launch
+                    await ActionItemExpirationManager.checkExpiredItems()
+                    
                     // Request notification permission on first launch
                     _ = await notificationService.requestPermission()
                 }
