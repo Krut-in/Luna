@@ -277,3 +277,103 @@ struct InitiateActionItemRequest: Codable {
 struct ConfirmDeclineRequest: Codable {
     let user_id: String
 }
+
+// MARK: - Chat Models
+
+/// Represents a group chat for coordinating venue visits
+struct Chat: Codable, Identifiable {
+    let id: String
+    let venue_id: String
+    let venue: ChatVenueInfo?
+    let last_message: String?
+    let last_message_at: String?
+    let participant_count: Int
+    let created_at: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case venue_id
+        case venue
+        case last_message
+        case last_message_at
+        case participant_count
+        case created_at
+    }
+}
+
+/// Venue info embedded in Chat response
+struct ChatVenueInfo: Codable {
+    let id: String
+    let name: String
+    let category: String
+    let image: String
+}
+
+/// Represents a message in a group chat
+struct ChatMessage: Codable, Identifiable {
+    let id: String
+    let chat_id: String
+    let content: String
+    let sender_id: String
+    let sender_name: String
+    let sender_avatar: String
+    let timestamp: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case chat_id
+        case content
+        case sender_id
+        case sender_name
+        case sender_avatar
+        case timestamp
+    }
+    
+    /// Formatted timestamp for display
+    var formattedTime: String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: timestamp) {
+            let displayFormatter = DateFormatter()
+            displayFormatter.timeStyle = .short
+            return displayFormatter.string(from: date)
+        }
+        return ""
+    }
+}
+
+/// Represents a participant in a chat
+struct ChatParticipant: Codable, Identifiable {
+    let id: String
+    let user_id: String
+    let name: String
+    let avatar: String
+    let joined_at: String
+}
+
+// MARK: - Chat API Request/Response Models
+
+/// Response from GET /users/{id}/chats endpoint
+struct UserChatsResponse: Codable {
+    let chats: [Chat]
+}
+
+/// Response from GET /chats/{id}/messages endpoint
+struct ChatMessagesResponse: Codable {
+    let messages: [ChatMessage]
+    let chat: Chat?
+    let participants: [ChatParticipant]?
+}
+
+/// Request body for POST /chats/{id}/messages endpoint
+struct SendMessageRequest: Codable {
+    let user_id: String
+    let content: String
+}
+
+/// Response from POST /chats/{id}/messages endpoint
+struct SendMessageResponse: Codable {
+    let success: Bool
+    let message: ChatMessage?
+}

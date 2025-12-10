@@ -109,6 +109,11 @@ protocol APIServiceProtocol {
     func confirmActionItem(itemId: String, userId: String) async throws -> ConfirmationActionResponse
     func declineActionItem(itemId: String, userId: String) async throws -> ConfirmationActionResponse
     func getActionItemStatus(itemId: String) async throws -> ActionItemStatusResponse
+    
+    // Chat Methods
+    func fetchUserChats(userId: String) async throws -> [Chat]
+    func fetchChatMessages(chatId: String, since: String?) async throws -> ChatMessagesResponse
+    func sendMessage(chatId: String, userId: String, content: String) async throws -> SendMessageResponse
 }
 
 // MARK: - API Service Implementation
@@ -319,6 +324,51 @@ class APIService: ObservableObject, APIServiceProtocol {
     /// - Returns: ActionItemStatusResponse with detailed status information
     func getActionItemStatus(itemId: String) async throws -> ActionItemStatusResponse {
         return try await performRequest(endpoint: "/action-items/\(itemId)/status", method: "GET")
+    }
+    
+    // MARK: - Chat Methods
+    
+    /// Fetches all active chats for a user
+    /// - Parameter userId: User identifier
+    /// - Returns: Array of Chat objects
+    func fetchUserChats(userId: String) async throws -> [Chat] {
+        let response: UserChatsResponse = try await performRequest(
+            endpoint: "/users/\(userId)/chats",
+            method: "GET"
+        )
+        return response.chats
+    }
+    
+    /// Fetches messages for a chat, optionally since a timestamp
+    /// - Parameters:
+    ///   - chatId: Chat identifier
+    ///   - since: Optional ISO8601 timestamp to fetch messages after
+    /// - Returns: ChatMessagesResponse with messages and participants
+    func fetchChatMessages(chatId: String, since: String? = nil) async throws -> ChatMessagesResponse {
+        var queryItems: [URLQueryItem] = []
+        if let since = since {
+            queryItems.append(URLQueryItem(name: "since", value: since))
+        }
+        return try await performRequest(
+            endpoint: "/chats/\(chatId)/messages",
+            method: "GET",
+            queryItems: queryItems.isEmpty ? nil : queryItems
+        )
+    }
+    
+    /// Sends a message to a chat
+    /// - Parameters:
+    ///   - chatId: Chat identifier
+    ///   - userId: Sender's user identifier
+    ///   - content: Message content
+    /// - Returns: SendMessageResponse with the saved message
+    func sendMessage(chatId: String, userId: String, content: String) async throws -> SendMessageResponse {
+        let request = SendMessageRequest(user_id: userId, content: content)
+        return try await performRequestWithRetry(
+            endpoint: "/chats/\(chatId)/messages",
+            method: "POST",
+            body: request
+        )
     }
     
     // MARK: - Private Helper Methods

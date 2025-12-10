@@ -204,7 +204,7 @@ struct ActionItemCardView: View {
                     onViewChat()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "bubble.left.and.bubble.right.fill")
+                        Image(systemName: "message.fill")
                             .font(.system(size: 14))
                         Text("View Chat")
                     }
@@ -213,7 +213,7 @@ struct ActionItemCardView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
-                    .background(Theme.Colors.primary)
+                    .background(Color.green)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Layout.smallCornerRadius))
                 }
                 .buttonStyle(PlainButtonStyle())

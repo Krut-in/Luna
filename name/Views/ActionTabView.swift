@@ -36,6 +36,8 @@ struct ActionTabView: View {
     @State private var navigationPath = NavigationPath()
     @State private var pendingConfirmations: [String: PendingConfirmationInfo] = [:] // actionItemId -> info
     @State private var initiatedItems: Set<String> = [] // Track locally initiated items
+    @State private var showDismissDialog = false
+    @State private var itemToDismiss: String?
     
     // MARK: - Body
     
@@ -57,6 +59,24 @@ struct ActionTabView: View {
                     VenueDetailView(venueId: String(destination.dropFirst(6)))
                 } else if destination.hasPrefix("detail_") {
                     ActionItemDetailView(actionItemId: String(destination.dropFirst(7)))
+                } else if destination.hasPrefix("chat_") {
+                    // Navigate to ChatView with chatId
+                    let chatId = String(destination.dropFirst(5))
+                    if let item = viewModel.actionItems.first(where: { statusManager.getChatId(actionItemId: $0.id) == chatId }),
+                       let venue = item.venue {
+                        ChatView(
+                            chatId: chatId,
+                            venue: ChatVenueInfo(
+                                id: venue.id,
+                                name: venue.name,
+                                category: venue.category,
+                                image: venue.image
+                            )
+                        )
+                    } else {
+                        // Fallback if venue not found
+                        Text("Chat not found")
+                    }
                 } else {
                     VenueDetailView(venueId: destination)
                 }
@@ -73,6 +93,15 @@ struct ActionTabView: View {
             }
             .onDisappear {
                 statusManager.stopAllPolling()
+            }
+            .dismissConfirmationDialog(isPresented: $showDismissDialog) {
+                if let itemId = itemToDismiss {
+                    Task {
+                        await viewModel.dismissActionItem(itemId)
+                        statusManager.stopPolling(actionItemId: itemId)
+                        itemToDismiss = nil
+                    }
+                }
             }
         }
     }
@@ -173,10 +202,8 @@ struct ActionTabView: View {
                                 }
                             },
                             onDismiss: {
-                                Task {
-                                    await viewModel.dismissActionItem(item.id)
-                                    statusManager.stopPolling(actionItemId: item.id)
-                                }
+                                itemToDismiss = item.id
+                                showDismissDialog = true
                             },
                             onTapCard: {
                                 navigationPath.append("detail_\(item.id)")
@@ -185,9 +212,7 @@ struct ActionTabView: View {
                             confirmationStatuses: statuses,
                             chatId: chatId,
                             onViewChat: chatId != nil ? {
-                                // TODO: Navigate to chat view when implemented
-                                // For now, show detail view
-                                navigationPath.append("detail_\(item.id)")
+                                navigationPath.append("chat_\(chatId!)")
                             } : nil
                         )
                         .padding(.horizontal)

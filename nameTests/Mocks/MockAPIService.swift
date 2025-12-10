@@ -216,4 +216,67 @@ class MockAPIService: APIServiceProtocol {
             createMockVenue(id: "venue_4", name: "Art Gallery", category: "Activity", interestedCount: 8, distance: 0.8)
         ]
     }
+    
+    // MARK: - Social Feed Methods
+    
+    func fetchActivities(userId: String, page: Int, limit: Int) async throws -> ActivitiesResponse {
+        if shouldFail { throw errorToThrow }
+        throw APIError.noData
+    }
+    
+    func fetchSocialFeed(userId: String, page: Int, limit: Int, since: Date?) async throws -> SocialFeedResponse {
+        if shouldFail { throw errorToThrow }
+        throw APIError.noData
+    }
+    
+    // MARK: - Go Ahead Confirmation Flow Methods
+    
+    func initiateActionItem(itemId: String, userId: String) async throws -> InitiateActionItemResponse {
+        if shouldFail { throw errorToThrow }
+        throw APIError.noData
+    }
+    
+    func confirmActionItem(itemId: String, userId: String) async throws -> ConfirmationActionResponse {
+        if shouldFail { throw errorToThrow }
+        throw APIError.noData
+    }
+    
+    func declineActionItem(itemId: String, userId: String) async throws -> ConfirmationActionResponse {
+        if shouldFail { throw errorToThrow }
+        throw APIError.noData
+    }
+    
+    func getActionItemStatus(itemId: String) async throws -> ActionItemStatusResponse {
+        if shouldFail { throw errorToThrow }
+        throw APIError.noData
+    }
+    
+    // MARK: - Chat Methods
+    
+    var mockChats: [Chat] = []
+    var mockMessages: [ChatMessage] = []
+    
+    func fetchUserChats(userId: String) async throws -> [Chat] {
+        if shouldFail { throw errorToThrow }
+        return mockChats
+    }
+    
+    func fetchChatMessages(chatId: String, since: String?) async throws -> ChatMessagesResponse {
+        if shouldFail { throw errorToThrow }
+        return ChatMessagesResponse(messages: mockMessages, chat: nil, participants: nil)
+    }
+    
+    func sendMessage(chatId: String, userId: String, content: String) async throws -> SendMessageResponse {
+        if shouldFail { throw errorToThrow }
+        let message = ChatMessage(
+            id: UUID().uuidString,
+            chat_id: chatId,
+            content: content,
+            sender_id: userId,
+            sender_name: "Test User",
+            sender_avatar: "https://example.com/avatar.jpg",
+            timestamp: ISO8601DateFormatter().string(from: Date())
+        )
+        return SendMessageResponse(success: true, message: message)
+    }
 }
