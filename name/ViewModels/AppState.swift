@@ -59,6 +59,9 @@ class AppState: ObservableObject {
     /// Action item count for badge display
     @Published var actionItemCount: Int = 0
     
+    /// Active action items list
+    @Published var activeActionItems: [ActionItem] = []
+    
     /// Selected tab index for tab navigation
     @Published var selectedTab: Int = 0
     
@@ -217,6 +220,11 @@ class AppState: ObservableObject {
         // Clear current state
         interestedVenueIds.removeAll()
         actionItemCount = 0
+        
+        // Clear action items state
+        pendingActionItem = nil
+        showActionItemToast = false
+        activeActionItems.removeAll()
         
         // Clear social feed data for new user context
         socialFeedActivities.removeAll()

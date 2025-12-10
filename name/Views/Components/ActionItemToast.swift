@@ -111,7 +111,7 @@ struct ActionItemToast: View {
         .padding(.horizontal, 16)
         .padding(.top, 50) // Below status bar
         .onTapGesture {
-            navigateToProfile()
+            navigateToAction()
         }
     }
     
@@ -123,9 +123,9 @@ struct ActionItemToast: View {
     
 
     
-    private func navigateToProfile() {
-        // Navigate to profile tab (index 3)
-        appState.selectedTab = 3
+    private func navigateToAction() {
+        // Navigate to Action tab (index 2)
+        appState.selectedTab = 2
         dismissToast()
     }
     
@@ -135,7 +135,7 @@ struct ActionItemToast: View {
         
         // Create new dismiss task with cancellation support
         dismissTask = Task {
-            try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+            try? await Task.sleep(nanoseconds: 5_000_000_000) // 5 seconds
             
             // Check if task was cancelled during sleep
             guard !Task.isCancelled else { return }

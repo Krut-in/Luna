@@ -40,7 +40,7 @@ struct ContentView: View {
                 case 1:
                     RecommendedFeedView()
                 case 2:
-                    SocialFeedView()
+                    ActionTabView()
                 case 3:
                     ProfileView()
                 default:

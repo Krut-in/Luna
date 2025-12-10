@@ -11,7 +11,7 @@
 //  TAB-SPECIFIC ANIMATIONS:
 //  - Discover: Bounce (scale 0.8 → 1.2 → 1.0) + shimmer sweep
 //  - For You: 360° rotation + yellow pulse glow
-//  - Social: Color shift (grayscale → vibrant primary blue)
+//  - Action: Color shift (grayscale → vibrant primary blue)
 //  - Profile: Bottom-to-top fill wave + subtle halo
 //  
 //  DESIGN APPROACH:
@@ -30,14 +30,14 @@ struct AnimatedTabIcon: View {
     enum TabIconType {
         case discover
         case forYou
-        case social
+        case action
         case profile
         
         var systemImage: String {
             switch self {
             case .discover: return "house.fill"
             case .forYou: return "star.fill"
-            case .social: return "person.2.fill"
+            case .action: return "list.bullet.clipboard"
             case .profile: return "person.fill"
             }
         }
@@ -64,8 +64,8 @@ struct AnimatedTabIcon: View {
                 discoverIcon
             case .forYou:
                 forYouIcon
-            case .social:
-                socialIcon
+            case .action:
+                actionIcon
             case .profile:
                 profileIcon
             }
@@ -130,8 +130,8 @@ struct AnimatedTabIcon: View {
         }
     }
     
-    // Social: Color Shift
-    private var socialIcon: some View {
+    // Action: Color Shift
+    private var actionIcon: some View {
         Image(systemName: type.systemImage)
             .font(.system(size: 28, weight: .semibold))
             .foregroundColor(isSelected ? Theme.Colors.primary : Theme.Colors.textSecondary)
@@ -188,7 +188,7 @@ struct AnimatedTabIcon: View {
             animateRotation()
             animatePulse()
             
-        case .social:
+        case .action:
             animateColorShift()
             
         case .profile:
@@ -242,7 +242,7 @@ struct AnimatedTabIcon: View {
         }
     }
     
-    // Social animation
+    // Action animation
     private func animateColorShift() {
         scaleValue = 0.9
         withAnimation(Theme.Animation.spring) {
@@ -279,14 +279,14 @@ struct AnimatedTabIcon: View {
         HStack(spacing: 30) {
             AnimatedTabIcon(type: .discover, isSelected: true)
             AnimatedTabIcon(type: .forYou, isSelected: true)
-            AnimatedTabIcon(type: .social, isSelected: true)
+            AnimatedTabIcon(type: .action, isSelected: true)
             AnimatedTabIcon(type: .profile, isSelected: true)
         }
         
         HStack(spacing: 30) {
             AnimatedTabIcon(type: .discover, isSelected: false)
             AnimatedTabIcon(type: .forYou, isSelected: false)
-            AnimatedTabIcon(type: .social, isSelected: false)
+            AnimatedTabIcon(type: .action, isSelected: false)
             AnimatedTabIcon(type: .profile, isSelected: false)
         }
     }

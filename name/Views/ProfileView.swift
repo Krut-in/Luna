@@ -174,45 +174,8 @@ struct ProfileView: View {
                             .padding(.horizontal)
                             .padding(.top, 20)
                             
-                            // Action Items Section
-                            if !viewModel.actionItems.isEmpty {
-                                VStack(alignment: .leading, spacing: Theme.Layout.spacing) {
-                                    HStack {
-                                        Text("Action Items")
-                                            .font(Theme.Fonts.title2)
-                                            .fontWeight(.bold)
-                                        
-                                        Spacer()
-                                        
-                                        Text("\(viewModel.actionItems.count)")
-                                            .font(Theme.Fonts.caption)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.white)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(Theme.Colors.accent)
-                                            .clipShape(Capsule())
-                                    }
-                                    .padding(.horizontal)
-                                    
-                                    ForEach(viewModel.actionItems) { item in
-                                        ActionItemCard(
-                                            actionItem: item,
-                                            onComplete: {
-                                                Task {
-                                                    await viewModel.completeActionItem(item.id)
-                                                }
-                                            },
-                                            onDismiss: {
-                                                Task {
-                                                    await viewModel.dismissActionItem(item.id)
-                                                }
-                                            }
-                                        )
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
+                            // Friend Activity Section (Collapsible)
+                            FriendActivitySection()
                             
                             // Interested Venues Grid
                             if !viewModel.interestedVenues.isEmpty {
@@ -525,6 +488,87 @@ struct ProfileThemeToggle: View {
             }
         }
         .padding(.horizontal, 2)
+    }
+}
+
+// MARK: - Friend Activity Section
+
+/// Collapsible section showing friend activity feed in Profile tab
+struct FriendActivitySection: View {
+    
+    @State private var isExpanded: Bool = false
+    @StateObject private var viewModel = SocialFeedViewModel(analytics: AnalyticsService.shared)
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header button
+            Button {
+                withAnimation(Theme.Animation.default) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Text("Friend Activity")
+                        .font(Theme.Fonts.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.Colors.textPrimary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Theme.Colors.textSecondary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                }
+                .padding(.horizontal)
+                .padding(.vertical, Theme.Layout.spacing)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            // Expandable content
+            if isExpanded {
+                VStack(spacing: Theme.Layout.spacing) {
+                    if viewModel.isLoading && viewModel.interestActivities.isEmpty {
+                        ProgressView()
+                            .padding()
+                    } else if viewModel.interestActivities.isEmpty && viewModel.highlightedVenues.isEmpty {
+                        Text("No friend activity yet")
+                            .font(Theme.Fonts.subheadline)
+                            .foregroundColor(Theme.Colors.textSecondary)
+                            .padding()
+                    } else {
+                        // Show recent activities
+                        ForEach(viewModel.interestActivities.prefix(5)) { activity in
+                            InterestActivityCard(activity: activity)
+                                .padding(.horizontal)
+                        }
+                        
+                        // Show highlighted venues if any
+                        ForEach(viewModel.highlightedVenues.prefix(2)) { venue in
+                            HighlightedVenueCard(venue: venue, onPlanMeetup: { _ in })
+                                .padding(.horizontal)
+                        }
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .background(Theme.Colors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Layout.cornerRadius))
+        .padding(.horizontal)
+        .task {
+            if isExpanded {
+                await viewModel.loadActivities()
+            }
+        }
+        .onChange(of: isExpanded) { _, newValue in
+            if newValue {
+                Task {
+                    await viewModel.loadActivities()
+                }
+            }
+        }
     }
 }
 

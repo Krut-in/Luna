@@ -41,7 +41,7 @@ struct CustomTabBarView: View {
     private let tabs: [(icon: String, label: String, index: Int)] = [
         ("house.fill", "Discover", 0),
         ("star.fill", "For You", 1),
-        ("person.2.fill", "Social", 2),
+        ("list.bullet.clipboard", "Action", 2),
         ("person.fill", "Profile", 3)
     ]
     
@@ -251,8 +251,8 @@ struct CustomTabBarView: View {
     
     private func badgeCount(for index: Int) -> Int {
         switch index {
-        case 2: return socialBadgeCount
-        case 3: return profileBadgeCount
+        case 2: return profileBadgeCount  // Action Tab shows action item count
+        case 3: return socialBadgeCount   // Profile Tab shows social activity count
         default: return 0
         }
     }
@@ -261,7 +261,7 @@ struct CustomTabBarView: View {
         switch index {
         case 0: return .discover
         case 1: return .forYou
-        case 2: return .social
+        case 2: return .action
         case 3: return .profile
         default: return .discover
         }
