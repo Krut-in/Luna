@@ -1,0 +1,24 @@
+INFO:     Will watch for changes in these directories: ['/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/name/name/Luna-Backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [69536] using WatchFiles
+INFO:     Started server process [69643]
+INFO:     Waiting for application startup.
+2025-11-23 06:03:08,582 - main - INFO - Starting Luna Backend API...
+2025-11-23 06:03:08,592 - database - INFO - Database engine created: sqlite+aiosqlite:///./luna.db
+2025-11-23 06:03:08,598 - database - INFO - Database tables created successfully
+2025-11-23 06:03:08,598 - database - INFO - Session maker created
+2025-11-23 06:03:08,604 - seed_data - INFO - Database already contains 8 users
+2025-11-23 06:03:08,604 - main - INFO - Luna Backend API ready
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56905 - "GET / HTTP/1.1" 200 OK
+2025-11-23 06:03:31,031 - main - INFO - Express interest request: user=user_1, venue=venue_2
+2025-11-23 06:03:31,042 - main - INFO - Interest removed: user=user_1, venue=venue_2
+INFO:     127.0.0.1:56915 - "POST /interests HTTP/1.1" 200 OK
+2025-11-23 06:03:38,701 - main - INFO - Express interest request: user=user_1, venue=venue_2
+2025-11-23 06:03:38,713 - main - INFO - Interest added: user=user_1, venue=venue_2
+INFO:     127.0.0.1:56926 - "POST /interests HTTP/1.1" 200 OK
+2025-11-23 06:03:46,750 - main - INFO - Fetching venue detail for venue_id: venue_1
+INFO:     127.0.0.1:56932 - "GET /venues/venue_1 HTTP/1.1" 200 OK
+2025-11-23 06:03:54,821 - main - INFO - Fetching recommendations for user_id: user_1
+2025-11-23 06:03:54,848 - main - INFO - Returning 12 recommendations (3 already interested)
+INFO:     127.0.0.1:56941 - "GET /recommendations?user_id=user_1 HTTP/1.1" 200 OK
