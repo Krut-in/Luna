@@ -892,7 +892,7 @@ async def express_interest(request: InterestRequest) -> InterestResponse:
                 .where(
                     and_(
                         ActionItemDB.venue_id == request.venue_id,
-                        ActionItemDB.status == "pending"
+                        ActionItemDB.status == "active"
                     )
                 )
             )
@@ -997,11 +997,11 @@ async def get_user_profile(user_id: str):
         # Get interested venues
         interested_venues = await get_user_interested_venues(session, user_id)
         
-        # Get action items where user is interested and status is pending
+        # Get action items where user is interested and status is active
         result = await session.execute(
             select(ActionItemDB)
             .options(selectinload(ActionItemDB.venue))
-            .where(ActionItemDB.status == "pending")
+            .where(ActionItemDB.status == "active")
         )
         all_action_items = result.scalars().all()
         

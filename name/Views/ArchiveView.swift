@@ -66,6 +66,14 @@ struct ArchiveView: View {
         } message: {
             Text("This action cannot be undone. The item will be permanently removed.")
         }
+        .onAppear {
+            // Hide tab bar when archive view appears
+            appState.isTabBarHidden = true
+        }
+        .onDisappear {
+            // Show tab bar when archive view disappears
+            appState.isTabBarHidden = false
+        }
     }
     
     // MARK: - Subviews

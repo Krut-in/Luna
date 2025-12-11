@@ -26,16 +26,10 @@ class ActionItemExpirationManager {
         do {
             let response = try await apiService.expireOldActionItems()
             
-            // Update local state - remove expired items from active list
-            if !response.expired_ids.isEmpty {
-                AppState.shared.activeActionItems.removeAll { item in
-                    response.expired_ids.contains(item.id)
-                }
-                
-                // Update action item count
-                AppState.shared.actionItemCount = AppState.shared.activeActionItems.count
-                
-                print("✅ Expired \(response.count) stale action items")
+            // Log result - expiration is handled by backend
+            // Action items will be refreshed when user views the Action tab
+            if response.expired_count > 0 {
+                print("✅ Expired \(response.expired_count) stale action items")
             }
         } catch {
             // Silent fail - expiration is a background operation

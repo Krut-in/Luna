@@ -134,7 +134,7 @@ class APIService: ObservableObject, APIServiceProtocol {
     
     // MARK: - Initialization
     
-    nonisolated init(baseURL: String = "http://172.20.10.2:8000", session: URLSession = .shared) {
+    nonisolated init(baseURL: String = "http://192.168.1.183:8000", session: URLSession = .shared) {
         self.baseURL = baseURL
         
         // Use custom session with production configuration if using shared session
@@ -153,7 +153,55 @@ class APIService: ObservableObject, APIServiceProtocol {
         
         // Configure JSON decoder for date handling
         self.decoder = JSONDecoder()
-        self.decoder.dateDecodingStrategy = .iso8601
+        // Use custom date decoding strategy to handle multiple ISO8601 formats
+        self.decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+            
+            // Try multiple ISO8601 formatters
+            let formatters: [ISO8601DateFormatter] = [
+                {
+                    let formatter = ISO8601DateFormatter()
+                    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                    return formatter
+                }(),
+                {
+                    let formatter = ISO8601DateFormatter()
+                    formatter.formatOptions = [.withInternetDateTime]
+                    return formatter
+                }(),
+                {
+                    // Handle dates without timezone (append Z)
+                    let formatter = ISO8601DateFormatter()
+                    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                    return formatter
+                }()
+            ]
+            
+            // Try each formatter
+            for formatter in formatters {
+                if let date = formatter.date(from: dateString) {
+                    return date
+                }
+            }
+            
+            // Try appending 'Z' for dates without timezone
+            // Check if there's no timezone suffix (Z, +, or - after position 10)
+            let hasTimezone = dateString.hasSuffix("Z") || 
+                              dateString.contains("+") || 
+                              (dateString.count > 10 && dateString.dropFirst(10).contains("-"))
+            
+            if !hasTimezone {
+                let dateStringWithZ = dateString + "Z"
+                for formatter in formatters {
+                    if let date = formatter.date(from: dateStringWithZ) {
+                        return date
+                    }
+                }
+            }
+            
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
+        }
         
         // Configure JSON encoder
         self.encoder = JSONEncoder()
@@ -383,7 +431,7 @@ class APIService: ObservableObject, APIServiceProtocol {
     /// - Returns: Array of ArchivedActionItem objects
     func fetchArchivedActionItems(userId: String) async throws -> [ArchivedActionItem] {
         let response: ArchivedActionItemsResponse = try await performRequest(
-            endpoint: "/users/\(userId)/action-items/archived",
+            endpoint: "/users/\(userId)/action-items/archive",
             method: "GET"
         )
         return response.items

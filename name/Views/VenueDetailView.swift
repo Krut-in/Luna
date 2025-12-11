@@ -357,6 +357,14 @@ struct VenueDetailView: View {
         .task {
             await viewModel.loadVenueDetail()
         }
+        .onAppear {
+            // Hide tab bar when venue detail view appears
+            appState.isTabBarHidden = true
+        }
+        .onDisappear {
+            // Show tab bar when venue detail view disappears
+            appState.isTabBarHidden = false
+        }
     }  // Close body
     
     

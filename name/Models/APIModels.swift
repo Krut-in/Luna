@@ -415,11 +415,16 @@ struct ArchivedActionItem: Codable, Identifiable {
 
 /// Response from GET /users/{userId}/action-items/archived endpoint
 struct ArchivedActionItemsResponse: Codable {
-    let items: [ArchivedActionItem]
+    let archived_items: [ArchivedActionItem]
+    let count: Int
+    
+    /// Map to items for convenience
+    var items: [ArchivedActionItem] { archived_items }
 }
 
 /// Response from GET /action-items/expire endpoint
 struct ExpireActionItemsResponse: Codable {
-    let expired_ids: [String]
-    let count: Int
+    let success: Bool
+    let expired_count: Int
+    let checked_at: String
 }

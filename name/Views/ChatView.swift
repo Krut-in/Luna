@@ -52,8 +52,14 @@ struct ChatView: View {
             await chatManager.loadMessages(chatId: chatId)
             chatManager.startPolling(chatId: chatId)
         }
+        .onAppear {
+            // Hide tab bar when chat view appears
+            appState.isTabBarHidden = true
+        }
         .onDisappear {
             chatManager.stopPolling(chatId: chatId)
+            // Show tab bar when chat view disappears
+            appState.isTabBarHidden = false
         }
     }
     

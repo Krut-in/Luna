@@ -49,16 +49,18 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            // Custom floating tab bar at bottom
-            VStack {
-                Spacer()
-                CustomTabBarView(
-                    selectedTab: $appState.selectedTab,
-                    socialBadgeCount: appState.newSocialActivityCount,
-                    profileBadgeCount: appState.actionItemCount
-                )
+            // Custom floating tab bar at bottom (hidden when in detail views)
+            if !appState.isTabBarHidden {
+                VStack {
+                    Spacer()
+                    CustomTabBarView(
+                        selectedTab: $appState.selectedTab,
+                        socialBadgeCount: appState.newSocialActivityCount,
+                        profileBadgeCount: appState.actionItemCount
+                    )
+                }
+                .zIndex(100)
             }
-            .zIndex(100)
             
             // Global Action Item Toast Overlay
             ActionItemToast(

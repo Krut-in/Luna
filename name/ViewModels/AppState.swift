@@ -68,6 +68,9 @@ class AppState: ObservableObject {
     /// Selected tab index for tab navigation
     @Published var selectedTab: Int = 0
     
+    /// Controls whether the tab bar is hidden (for detail views like ChatView)
+    @Published var isTabBarHidden: Bool = false
+    
     /// Deep link venue ID for navigation
     @Published var deepLinkVenueId: String?
     
